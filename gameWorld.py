@@ -41,14 +41,18 @@ class GameWorld:
         pygame.display.flip()
 
     def update_wo_flip(self):
-        self.screen.fill('white')
-        self.ground.draw()
-        self.draw_impacts()
-        self.tank1.draw()
-        self.tank2.draw()
-        self.wall.draw()
-
-        self.draw_header()
+        if self.check_win() == 0:
+            self.screen.fill('white')
+            self.ground.draw()
+            self.draw_impacts()
+            self.tank1.draw()
+            self.tank2.draw()
+            self.wall.draw()
+            self.draw_header()
+        elif self.check_win() == 1: # player 1 won
+            self.draw_win(1)
+        else: # player 2 won
+            self.draw_win(2)
 
     def blast_hit(self,projectile,xi,yi):
         # xi, yi = blast coordinate
@@ -180,22 +184,13 @@ class GameWorld:
                     self.update()
                     self.mouse_button_time = time.time()
 
-    def draw(self):
-        self.update()
-
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
-            # list of all the keys pressed
-            keys = pygame.key.get_pressed()
-            self.tank_moves(keys)
-
-            # list of all the mouse buttons pressed
-            mouse_buttons = pygame.mouse.get_pressed()
-            self.mouse_button_pressed(mouse_buttons)
+    def check_replay(self,mouse_buttons):
+        x,y = pygame.mouse.get_pos()
+        432,478
+        if mouse_buttons[0]:
+            if 557 >= x >= 432 and 518 >= y >= 478:
+                return True
+        return False
 
     def draw_header(self):
         self.draw_slider()
@@ -365,3 +360,27 @@ class GameWorld:
         for i in self.impact_list:
             projectile,x,y = i
             pygame.draw.circle(self.screen,white,(x,y),projectile.blast_radius)
+
+    def check_win(self):
+        # 0 if no one
+        # 1 if tank 1 won
+        # 2 if tank 2 won
+
+        if self.tank1.hp == 0:
+            return 2
+        elif self.tank2.hp == 0:
+            return 1
+        return 0
+
+    def draw_win(self,id):
+        white = (255,255,255)
+        black = (40,40,40)
+        green = (0,150,0)
+        win_rect = pygame.draw.rect(self.screen,white,(175,200,650,400),0,20)
+        pygame.draw.rect(self.screen,black,(175,200,650,400),10,20)
+        self.draw_text(335,305,0,f'PLAYER {id}',90)
+        self.draw_text(400,385,0,'WON!',90)
+
+        button = pygame.draw.rect(self.screen,green,(432,478,125,40),0,4)
+        button = pygame.draw.rect(self.screen,black,(432,478,125,40),4,4)
+        self.draw_text(440,485,0,'REPLAY',35)
